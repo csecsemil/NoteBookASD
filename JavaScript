@@ -1,0 +1,13 @@
+let notebooks = [
+    { id: 1,
+      name: "first notebook",
+      content: "This is the content of the first notebook.",
+      active: true
+    },
+    { id: 2,
+      name: "second notebook",
+      content: "This is the content of the second notebook.",
+      active: false
+    },
+    
+]
