@@ -1,13 +1,65 @@
-let notebooks = [
-    { id: 1,
-      name: "first notebook",
-      content: "This is the content of the first notebook.",
-      active: true
-    },
-    { id: 2,
-      name: "second notebook",
-      content: "This is the content of the second notebook.",
-      active: false
-    },
+document.addEventListener('DOMContentLoaded', () => {
+    const addTabBtn = document.getElementById('add-Tab-Btn');
+    const tabBar = document.getElementById('tab-Bar');
+    const tabContainer = document.getElementById('tab-Container');
+    let tabCount = 0;
+
+    addTabBtn.addEventListener('click', () => {
+        createNewTab(true);
+    });
+
+    loadTabs();
+
+    /**
+     * Create a new tab.
+     * @param {boolean} activate
+     * @param {string} content
+     * @param {number|null} id 
+     * */
+
+    function createNewTab(activate = true, content = '', id = null) {
+        if (id === null) {
+            tabCount++;
+            id = tabCount
+        } else {
+            if (id > tabCount) {
+                tabCount = id;
+            }
+        }
+        const tabId = `tab-${id}`;
+        
+        // Create tab button
+        const tabButton = document.createElement('button');
+        tabButton.className = 'tab-button';
+        tabButton.id = tabId;
+        tabButton.textContent = `Note ${id}`;
+        tabButton.dataset.target = `content-${id}`;
+        tabButton.addEventListener('click', handeleTabSwitch);
+        tabButton.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if(confirm(`Biztosan törölni szeretnéd a "${tabButton.textContent}" jegyzetet?`)) {
+                deleteTab(tabId);
+        }
+        });
+        tabBar.appendChild(tabButton);
+
+        // Create tab content area
+        const tabContent = document.createElement('div');
+        tabContent.className = 'tab-content';
+        tabContent.id = `content-${id}`;
+
+        const textarea = document.createElement('textarea');
+        textarea.className = 'note-textarea';
+        textarea.placeholder = 'Írd ide a jegyzeteidet...';
+        textarea.value = content;
+        textarea.addEventListener('input', saveTabs);
+        tabContent.appendChild(textarea);
+        tabContainer.appendChild(tabContent);
+        if (activate) {
+            activateTab(tabId);
+        }
+
+        saveTabs();
+    }
+
     
-]
