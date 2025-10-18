@@ -1,28 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebNote</title>
-    <link rel="stylesheet" href="styles.css">
-    
+    <title>NoteBook - Jegyzetfüzet</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div id="notebook-app">
+    <div class="container">
         <header>
-            <h1>NoteBook</h1>
-            <button id="add-tab-btn" title="New note">+</button>
+            <h1>📝 NoteBook</h1>
+            <button id="add-Tab-Btn" class="add-tab-btn">+ Új jegyzet</button>
         </header>
-
-        <div id="tab-bar">
+        
+        <div class="tabs-wrapper">
+            <div id="tab-Bar" class="tab-bar"></div>
         </div>
-
-        <div id="tab-container">
-
-        </div>
+        
+        <div id="tab-Container" class="tab-container"></div>
     </div>
-    <script src="script.js"></script>
     
+    <script src="JavaScript"></script>
 </body>
 </html>

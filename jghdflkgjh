@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.tab-button').forEach(button => {
             const contentId = button.dataset.target;
             const contentElement = document.getElementById(contentId);
-            const textarea = contentElement ? contentElement.querySelector('.note-textarea') : null;
+            const textarea = contentElement?.querySelector('.note-textarea');
             const tabName = button.querySelector('.tab-name')?.textContent || 'Note';
 
             tabsData.push({
@@ -148,5 +148,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
-
-
