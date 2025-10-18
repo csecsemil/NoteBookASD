@@ -1,151 +1,67 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const addTabBtn = document.getElementById('add-Tab-Btn');
+    const addBtn = document.getElementById('add-Tab-Btn');
     const tabBar = document.getElementById('tab-Bar');
     const tabContainer = document.getElementById('tab-Container');
-    let tabCount = 0;
+    let count = 0;
 
-    addTabBtn.addEventListener('click', () => {
-        createNewTab(true);
-    });
+    addBtn.onclick = () => newTab();
+    load();
 
-    loadTabs();
-
-    function createNewTab(activate = true, content = '', id = null, name = null) {
-        if (id === null) {
-            tabCount++;
-            id = tabCount;
-        } else {
-            if (id > tabCount) {
-                tabCount = id;
-            }
-        }
-        const tabId = `tab-${id}`;
-        const tabName = name || `Note ${id}`;
+    function newTab(content = '', name = null) {
+        const id = ++count;
+        const n = name || `Note ${id}`;
         
-        // Create tab button
-        const tabButton = document.createElement('button');
-        tabButton.className = 'tab-button';
-        tabButton.id = tabId;
-        tabButton.dataset.target = `content-${id}`;
+        // Tab
+        const tab = document.createElement('button');
+        tab.className = 'tab-button';
+        tab.id = `tab-${id}`;
+        tab.innerHTML = `<span>${n}</span><span class="tab-close">×</span>`;
+        tab.onclick = e => e.target.classList.contains('tab-close') 
+            ? confirm('Törlöd?') && del(id) 
+            : active(id);
         
-        // Tab text and close button
-        tabButton.innerHTML = `
-            <span class="tab-name">${tabName}</span>
-            <span class="tab-close">×</span>
-        `;
+        // Content
+        const div = document.createElement('div');
+        div.className = 'tab-content';
+        div.id = `content-${id}`;
+        div.innerHTML = `<textarea oninput="save()">${content}</textarea>`;
         
-        // Click events
-        tabButton.addEventListener('click', (e) => {
-            if (e.target.classList.contains('tab-close')) {
-                if(confirm(`Törölni szeretnéd a "${tabName}" jegyzetet?`)) {
-                    deleteTab(tabId);
-                }
-            } else {
-                activateTab(tabId);
-            }
-        });
-        
-        tabBar.appendChild(tabButton);
-
-        // Create tab content
-        const tabContent = document.createElement('div');
-        tabContent.className = 'tab-content';
-        tabContent.id = `content-${id}`;
-
-        const textarea = document.createElement('textarea');
-        textarea.className = 'note-textarea';
-        textarea.placeholder = 'Írd ide a jegyzeteidet...';
-        textarea.value = content;
-        textarea.addEventListener('input', saveTabs);
-        
-        tabContent.appendChild(textarea);
-        tabContainer.appendChild(tabContent);
-        
-        if (activate) {
-            activateTab(tabId);
-        }
-
-        saveTabs();
+        tabBar.appendChild(tab);
+        tabContainer.appendChild(div);
+        active(id);
+        save();
     }
 
-    function activateTab(tabId) {
-        document.querySelectorAll('.tab-button').forEach(btn => {
-            btn.classList.remove('active-tab');
-        });
-
-        document.querySelectorAll('.tab-content').forEach(content => { 
-            content.classList.remove('active-content'); 
-        });
-
-        const activeTabButton = document.getElementById(tabId);
-        if (activeTabButton) {
-            activeTabButton.classList.add('active-tab');
-            const targetContent = document.getElementById(activeTabButton.dataset.target);
-            if (targetContent) {
-                targetContent.classList.add('active-content');
-            }
-        }   
+    function active(id) {
+        document.querySelectorAll('.tab-button, .tab-content').forEach(el => 
+            el.classList.remove('active-tab', 'active-content')
+        );
+        document.getElementById(`tab-${id}`).classList.add('active-tab');
+        document.getElementById(`content-${id}`).classList.add('active-content');
     }
 
-    function deleteTab(tabId) {
-        const tabButton = document.getElementById(tabId);
-        const contentId = tabButton.dataset.target;
-        const tabContent = document.getElementById(contentId);
-
-        const wasActive = tabButton.classList.contains('active-tab');
-
-        tabBar.removeChild(tabButton);
-        tabContainer.removeChild(tabContent);
-
-        if (wasActive) {
-            const remainingTabs = document.querySelectorAll('.tab-button');
-            if (remainingTabs.length > 0) {
-                activateTab(remainingTabs[0].id);
-            }
-        }
-        saveTabs();
+    function del(id) {
+        document.getElementById(`tab-${id}`).remove();
+        document.getElementById(`content-${id}`).remove();
+        const remaining = document.querySelector('.tab-button');
+        if (remaining) active(remaining.id.split('-')[1]);
+        save();
     }
 
-    function saveTabs() {
-        const tabsData = [];
-        document.querySelectorAll('.tab-button').forEach(button => {
-            const contentId = button.dataset.target;
-            const contentElement = document.getElementById(contentId);
-            const textarea = contentElement ? contentElement.querySelector('.note-textarea') : null;
-            const tabName = button.querySelector('.tab-name')?.textContent || 'Note';
-
-            tabsData.push({
-                id: parseInt(button.id.split('-')[1]),
-                name: tabName,
-                content: textarea?.value || '',
-                isActive: button.classList.contains('active-tab')
-            });
+    window.save = () => {
+        const tabs = Array.from(document.querySelectorAll('.tab-button')).map(tab => {
+            const id = tab.id.split('-')[1];
+            return {
+                name: tab.querySelector('span').textContent,
+                content: document.querySelector(`#content-${id} textarea`).value
+            };
         });
+        localStorage.setItem('tabs', JSON.stringify(tabs));
+    };
 
-        localStorage.setItem('noteTabs', JSON.stringify(tabsData));
-    }
-
-    function loadTabs() {
-        const savedTabs = localStorage.getItem('noteTabs');
-        if (savedTabs) {
-            const tabsData = JSON.parse(savedTabs);
-            let activeTabId = null;
-
-            tabsData.forEach(data => {
-                createNewTab(false, data.content, data.id, data.name);
-                if (data.isActive) {
-                    activeTabId = `tab-${data.id}`;
-                }
-            });
-
-            if (activeTabId) {
-                activateTab(activeTabId);
-            } else if (tabsData.length > 0) {
-                activateTab(`tab-${tabsData[0].id}`);
-            }
-        } else {
-            createNewTab(true);
-        }
+    function load() {
+        const saved = JSON.parse(localStorage.getItem('tabs') || '[]');
+        saved.length ? saved.forEach(t => newTab(t.content, t.name)) : newTab();
     }
 });
 
