@@ -1,14 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Javított ID-k (kisbetűs-kötőjeles formátum)
-    const addTabBtn = document.getElementById('add-Tab-Btn'); // <- Ez jó a HTML-nek megfelelően
-    const tabBar = document.getElementById('tab-Bar');       // <- Ez jó a HTML-nek megfelelően  
-    const tabContainer = document.getElementById('tab-Container'); // <- Ez jó a HTML-nek megfelelően
+    console.log('JavaScript betöltve!');
     
+    const addTabBtn = document.getElementById('add-Tab-Btn');
+    const tabBar = document.getElementById('tab-Bar');
+    const tabContainer = document.getElementById('tab-Container');
     let count = 0;
-
-    addTabBtn.onclick = () => newTab();
-    load();
-
+    
+    if (!addTabBtn || !tabBar || !tabContainer) {
+        console.error('Hiányzó HTML elemek!');
+        return;
+    }
+    
+    console.log('Minden elem megtalálva!');
+    
+    addTabBtn.onclick = () => {
+        console.log('Gomb kattintva!');
+        newTab();
+    };
+    
     function newTab(content = '', name = null) {
         const id = ++count;
         const n = name || `Note ${id}`;
@@ -17,32 +26,93 @@ document.addEventListener('DOMContentLoaded', () => {
         const tab = document.createElement('button');
         tab.className = 'tab-button';
         tab.id = `tab-${id}`;
+        
         const tabNameSpan = document.createElement('span');
+        tabNameSpan.className = 'tab-name';
         tabNameSpan.textContent = n;
-        tabNameSpan.setAttribute('contenteditable', 'true'); // <<-- EZ A LÉNYEG
+        tabNameSpan.setAttribute('contenteditable', 'true');
+        
         const tabCloseSpan = document.createElement('span');
         tabCloseSpan.className = 'tab-close';
         tabCloseSpan.textContent = '×';
+        
         tab.appendChild(tabNameSpan);
         tab.appendChild(tabCloseSpan);
         tab.onclick = e => e.target.classList.contains('tab-close') 
             ? confirm('Törlöd?') && del(id) 
             : active(id);
         
-        // Content
+        // Content - CSAK EGY TEXTAREA!
         const div = document.createElement('div');
         div.className = 'tab-content';
         div.id = `content-${id}`;
-        div.innerHTML = `<textarea oninput="save()">${content}</textarea>`;
+        
+        const textarea = document.createElement('textarea');
+        textarea.className = 'note-textarea';
+        textarea.placeholder = 'Kezdd el ide írni a jegyzetedet...';
+        textarea.value = content;
+        textarea.addEventListener('input', save); // <- Használd a save() függvényt
+        
+        div.appendChild(textarea); // <- Csak egy textarea!
         
         tabBar.appendChild(tab);
         tabContainer.appendChild(div);
         active(id);
         save();
+    }
 
-        const textarea = document.createElement('textarea');
+    function setupToolbar() {
+        const boldBtn = document.getElementById('bold-btn');
+        const italicBtn = document.getElementById('italic-btn');
+        const underlineBtn = document.getElementById('underline-btn');
+        const fontSmallBtn = document.getElementById('font-small');
+        const fontLargeBtn = document.getElementById('font-large');
+        const fontSelector = document.getElementById('font-family');
+        const colorPicker = document.getElementById('text-color');
         
+        // Ellenőrizd, hogy léteznek-e az elemek
+        if (!boldBtn || !italicBtn || !underlineBtn) {
+            console.error('Hiányzó toolbar elemek!');
+            return;
+        }
+        
+        boldBtn.addEventListener('click', () => toggleFormat('fontWeight', 'bold'));
+        italicBtn.addEventListener('click', () => toggleFormat('fontStyle', 'italic'));
+        underlineBtn.addEventListener('click', () => toggleFormat('textDecoration', 'underline'));
+        
+        fontSmallBtn.addEventListener('click', () => changeFontSize(-2));
+        fontLargeBtn.addEventListener('click', () => changeFontSize(2));
+        
+        fontSelector.addEventListener('change', (e) => {
+            const activeTextarea = document.querySelector('.tab-content.active-content .note-textarea');
+            if (activeTextarea) {
+                activeTextarea.style.fontFamily = e.target.value;
+            }
+        });
+        
+        colorPicker.addEventListener('change', (e) => {
+            const activeTextarea = document.querySelector('.tab-content.active-content .note-textarea');
+            if (activeTextarea) {
+                activeTextarea.style.color = e.target.value;
+            }
+        });
+    }
 
+    function toggleFormat(property, value) {
+        const activeTextarea = document.querySelector('.tab-content.active-content .note-textarea');
+        if (activeTextarea) {
+            const currentValue = activeTextarea.style[property];
+            activeTextarea.style[property] = currentValue === value ? 'normal' : value;
+        }
+    }
+
+    function changeFontSize(change) {
+        const activeTextarea = document.querySelector('.tab-content.active-content .note-textarea');
+        if (activeTextarea) {
+            const currentSize = parseInt(activeTextarea.style.fontSize) || 16;
+            const newSize = Math.max(10, Math.min(32, currentSize + change));
+            activeTextarea.style.fontSize = newSize + 'px';
+        }
     }
 
     function active(id) {
@@ -65,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tabs = Array.from(document.querySelectorAll('.tab-button')).map(tab => {
             const id = tab.id.split('-')[1];
             return {
-                name: tab.querySelector('span').textContent,
+                name: tab.querySelector('.tab-name').textContent,
                 content: document.querySelector(`#content-${id} textarea`).value
             };
         });
@@ -76,15 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const saved = JSON.parse(localStorage.getItem('tabs') || '[]');
         saved.length ? saved.forEach(t => newTab(t.content, t.name)) : newTab();
     }
-
-    // Menti a tab nevét, tartalmát és aktív állapotát
-    tabsData.push({
-        id: parseInt(btn.id.split('-')[1]), 
-        name: nameSpan ? nameSpan.textContent : 'Jegyzet',
-        content: textarea ? textarea.value : '',
-        isActive: btn.classList.contains('active-tab')
-    });
-
 });
 
 
