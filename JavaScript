@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const addBtn = document.getElementById('add-Tab-Btn');
-    const tabBar = document.getElementById('tab-Bar');
-    const tabContainer = document.getElementById('tab-Container');
+    // Javított ID-k (kisbetűs-kötőjeles formátum)
+    const addTabBtn = document.getElementById('add-Tab-Btn'); // <- Ez jó a HTML-nek megfelelően
+    const tabBar = document.getElementById('tab-Bar');       // <- Ez jó a HTML-nek megfelelően  
+    const tabContainer = document.getElementById('tab-Container'); // <- Ez jó a HTML-nek megfelelően
+    
     let count = 0;
 
-    addBtn.onclick = () => newTab();
+    addTabBtn.onclick = () => newTab();
     load();
 
     function newTab(content = '', name = null) {
@@ -15,7 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const tab = document.createElement('button');
         tab.className = 'tab-button';
         tab.id = `tab-${id}`;
-        tab.innerHTML = `<span>${n}</span><span class="tab-close">×</span>`;
+        const tabNameSpan = document.createElement('span');
+        tabNameSpan.textContent = n;
+        tabNameSpan.setAttribute('contenteditable', 'true'); // <<-- EZ A LÉNYEG
+        const tabCloseSpan = document.createElement('span');
+        tabCloseSpan.className = 'tab-close';
+        tabCloseSpan.textContent = '×';
+        tab.appendChild(tabNameSpan);
+        tab.appendChild(tabCloseSpan);
         tab.onclick = e => e.target.classList.contains('tab-close') 
             ? confirm('Törlöd?') && del(id) 
             : active(id);
@@ -30,6 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
         tabContainer.appendChild(div);
         active(id);
         save();
+
+        const textarea = document.createElement('textarea');
+        
+
     }
 
     function active(id) {
@@ -63,6 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const saved = JSON.parse(localStorage.getItem('tabs') || '[]');
         saved.length ? saved.forEach(t => newTab(t.content, t.name)) : newTab();
     }
+
+    // Menti a tab nevét, tartalmát és aktív állapotát
+    tabsData.push({
+        id: parseInt(btn.id.split('-')[1]), 
+        name: nameSpan ? nameSpan.textContent : 'Jegyzet',
+        content: textarea ? textarea.value : '',
+        isActive: btn.classList.contains('active-tab')
+    });
+
 });
+
 
 
