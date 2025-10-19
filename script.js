@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = ++count;
         const n = name || `Note ${id}`;
         
-        // Tab
         const tab = document.createElement('button');
         tab.className = 'tab-button';
         tab.id = `tab-${id}`;
@@ -42,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ? confirm('Törlöd?') && del(id) 
             : active(id);
         
-        // Content - CSAK EGY TEXTAREA!
         const div = document.createElement('div');
         div.className = 'tab-content';
         div.id = `content-${id}`;
