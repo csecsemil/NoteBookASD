@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabContainer = document.getElementById('tab-Container');
     let count = 0;
     
+    console.log('addTabBtn:', addTabBtn);
+    console.log('tabBar:', tabBar);
+    console.log('tabContainer:', tabContainer);
+    
     if (!addTabBtn || !tabBar || !tabContainer) {
         console.error('Hiányzó HTML elemek!');
         return;
@@ -13,11 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('Minden elem megtalálva!');
     
-    addTabBtn.onclick = () => {
-        console.log('Gomb kattintva!');
-        newTab();
-    };
-    
+    // Először definiáld az összes függvényt
     function newTab(content = '', name = null) {
         const id = ++count;
         const n = name || `Note ${id}`;
@@ -49,9 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
         textarea.className = 'note-textarea';
         textarea.placeholder = 'Kezdd el ide írni a jegyzetedet...';
         textarea.value = content;
-        textarea.addEventListener('input', save); // <- Használd a save() függvényt
+        textarea.addEventListener('input', save);
         
-        div.appendChild(textarea); // <- Csak egy textarea!
+        div.appendChild(textarea);
         
         tabBar.appendChild(tab);
         tabContainer.appendChild(div);
@@ -144,7 +144,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const saved = JSON.parse(localStorage.getItem('tabs') || '[]');
         saved.length ? saved.forEach(t => newTab(t.content, t.name)) : newTab();
     }
-});
 
+    // Végül állítsd be az eseménykezelőket és töltsd be az adatokat
+    addTabBtn.onclick = () => {
+        console.log('Új tab gomb kattintva!');
+        newTab();
+    };
+
+    load();
+    setupToolbar();
+});
 
 
